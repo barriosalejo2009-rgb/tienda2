@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Dinámica — Actividad JS</title>
+
+    <!--
+    ============================================================
+    ACTIVIDAD — DESARROLLO DE APLICACIONES WEB DINÁMICAS
+    6° Año — Tecnicatura en Programación — DC 284/12
+    ============================================================
+    Archivo JS externo: dinamica.js  (vinculado al final del body)
+    ============================================================
+    -->
+
+    <style>
+
+        /* ── VARIABLES CSS ── */
+        /* Tema claro — valores por defecto */
+        :root {
+            --fondo:        #d5b8fa;
+            --texto:        #222222;
+            --tarjeta:      #ffffff;
+            --borde:        #e0e0e0;
+            --acento:       #3c195e;
+            --acento-hover: #a569ce;
+            --sombra:       rgba(0,0,0,0.10);
+            --header-bg:    #9a57e7;
+        }
+
+        /* Tema oscuro — se activa con classList.toggle("oscuro") */
+        /* 💡 TAREA: modificá estos colores */
+        body.oscuro {
+            --fondo:        #13131f;
+            --texto:        #e8e8f0;
+            --tarjeta:      #1e1e30;
+            --borde:        #333355;
+            --acento:       #ab5bf6;
+            --acento-hover: #7040e0;
+            --sombra:       rgba(0,0,0,0.45);
+            --header-bg:    #0d0d1a;
+        }
+
+        /* ── RESET ── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--fondo);
+            color: var(--texto);
+            transition: background-color 0.35s, color 0.35s;
+            min-height: 100vh;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        header h1 { font-size: 1.3rem; letter-spacing: 0.5px; }
+
+        #btn-tema {
+            background: white;
+            color: var(--header-bg);
+            border: none;
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        #btn-tema:hover { transform: scale(1.06); }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* ── TÍTULO SECCIÓN ── */
+        .titulo-seccion {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-left: 0.9rem;
+            border-left: 5px solid var(--acento);
+            color: var(--texto);
+        }
+
+        /* ══════════════════════════════════════════
+           CARRUSEL
+        ══════════════════════════════════════════ */
+
+        /*
+         El carrusel tiene tres capas:
+1. .carrusel-wrapper   → el contenedor visible (overflow: hidden oculta lo que sale)
+2. .carrusel-track     → la "cinta" que se mueve con transform: translateX()
+3. .producto-card      → cada tarjeta de producto
+        */
+
+        .carrusel-contenedor {
+            position: relative;      /* necesario para posicionar las flechas */
+        }
+
+        /* Contenedor visible — lo que se sale queda oculto */
+        .carrusel-wrapper {
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        /*
+         La "cinta" de tarjetas.
+         display: flex pone todas las tarjetas en fila.
+         transition hace que el deslizamiento sea suave.
+         JS cambia transform: translateX(-Xpx) para moverla.
+        */
+        .carrusel-track {
+            display: flex;
+            gap: 1.2rem;
+            transition: transform 0.4s ease;
+            padding: 0.5rem 0.2rem 1rem;
+        }
+
+        /* Cada tarjeta de producto */
+        .producto-card {
+            /*
+             calc(25% - 0.9rem) → cada tarjeta ocupa 1/4 del ancho
+             menos el espacio del gap. Así entran 4 exactas.
+             flex-shrink: 0 → evita que se achiquen.
+            */
+            flex: 0 0 calc(25% - 0.9rem);
+            min-width: 0;
+
+            background-color: var(--tarjeta);
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            box-shadow: 0 3px 10px var(--sombra);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.35s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .producto-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--sombra);
+        }
+
+        .producto-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;   /* siempre cuadrada */
+            object-fit: cover;
+            display: block;
+        }
+
+        .producto-info {
+            padding: 0.9rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 0.35rem;
+        }
+
+        .producto-nombre {
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .producto-descripcion {
+            font-size: 0.82rem;
+            color: #888;
+            flex: 1;
+        }
+
+        .producto-precio {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--acento);
+        }
+
+        /* Botón Agregar al carrito */
+        .btn-agregar {
+            margin-top: 0.5rem;
+            background-color: var(--acento);
+            color: white;
+            border: none;
+            padding: 0.55rem 0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+        .btn-agregar:hover {
+            background-color: var(--acento-hover);
+            transform: scale(1.02);
+        }
+
+        /* ── FLECHAS DEL CARRUSEL ── */
+        .flecha {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--acento);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: background-color 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .flecha:hover { background-color: var(--acento-hover); transform: translateY(-50%) scale(1.1); }
+        .flecha:disabled { background: #ccc; cursor: default; transform: translateY(-50%); }
+
+        #btn-anterior { left: -20px; }
+        #btn-siguiente { right: -20px; }
+
+        /* ── INDICADORES (puntitos) ── */
+        .indicadores {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .punto {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--borde);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .punto.activo {
+            background: var(--acento);
+            transform: scale(1.3);
+        }
+
+        /* ── CARRITO FLOTANTE ── */
+        #carrito-flotante {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--acento);
+            color: white;
+            padding: 0.8rem 1.3rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+            z-index: 200;
+        }
+        #carrito-flotante:hover { transform: scale(1.05); }
+
+        /* Animación de "rebote" al agregar */
+        @keyframes rebote {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.25); }
+            70%  { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .rebote { animation: rebote 0.4s ease; }
+
+        /* ── FOOTER ── */
+        footer {
+            background-color: var(--header-bg);
+            color: rgba(255,255,255,0.75);
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .main-header {
+            width: 100%;
+            background-color: var(--header-bg);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+        .logo-container h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .hero-banner {
+            width: 100%;
+            height: 300px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("nnnn");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            text-align: center;
+        }
+        .banner-text h2 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        .banner-text p {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo-container">
+            <img src="tienda.png" alt="logo tienda dinamica" class="logo">
+            <h1>Tienda Dinámica</h1>
+        </div>
+        <!--
+            onclick="cambiarTema()" llama a la función en dinamica.js
+            classList.toggle("oscuro") agrega o quita la clase del body
+        -->
+        <button id="btn-tema" onclick="cambiarTema()">🌙 Modo Oscuro</button>
+    </div>
+</header>
+
+<section class="hero-banner">
+    <div class="banner-text">
+        <h2>Bienvenidos a nuestra tienda</h2>
+        <p>Encontrá los mejores productos al mejor precio</p>
+    </div>
+</section>
+
+
+<main>
+
+    <h2 class="titulo-seccion">Nuestros Productos</h2>
+
+    <!--
+        ESTRUCTURA DEL CARRUSEL:
+        .carrusel-contenedor → posiciona las flechas
+        .carrusel-wrapper    → recorta con overflow: hidden
+        .carrusel-track      → la fila de tarjetas que se mueve
+        Las tarjetas .producto-card las genera JS automáticamente
+    -->
+    <div class="carrusel-contenedor">
+
+        <!-- Flecha izquierda -->
+        <button class="flecha" id="btn-anterior" onclick="moverCarrusel(-1)">◀️</button>
+
+        <div class="carrusel-wrapper">
+            <!-- JS llena este div con las tarjetas de productos -->
+            <div class="carrusel-track" id="carrusel-track"></div>
+        </div>
+
+        <!-- Flecha derecha -->
+        <button class="flecha" id="btn-siguiente" onclick="moverCarrusel(1)">▶️</button>
+
+    </div>
+
+    <!-- Puntitos indicadores — JS los genera automáticamente -->
+    <div class="indicadores" id="indicadores"></div>
+
+</main>
+
+
+<footer>
+    <p>Web Dinámicas — 6°2 — Tecnicatura en Programación</p>
+</footer>
+
+
+<!--
+    Botón flotante del carrito (aparece al agregar productos)
+    JS lo muestra y actualiza el contador
+-->
+<button id="carrito-flotante" onclick="verCarrito()" style="display:none;">
+    🛒 <span id="contador-carrito">0</span> productos
+</button>
+
+
+<!--
+    VINCULAMOS EL JS AL FINAL DEL BODY
+    Así el HTML ya existe cuando JS lo intenta modificar
+-->
+<script src="dinamica.js"></script>
+
+</body>
+</html>
